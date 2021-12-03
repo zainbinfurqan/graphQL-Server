@@ -59,7 +59,9 @@ module.exports = buildSchema(`
     }
 
     type multiDeviceLoginResponse {
-        link : String
+        token: String
+        redirectRoute: String
+        user : getAllUsers
     }
 
     type RootQuery {
@@ -68,7 +70,7 @@ module.exports = buildSchema(`
         getSingleProductQuery(id: String): getSingleProduct
         getUserProfileQuery(id: String): getUserProfile
         getUserCartQuery(id: String): getUserCart
-        multiDeviceLogin(multiDeviceToken: String) : multiDeviceLoginResponse
+        multiDeviceLogin(id: String) : multiDeviceLoginResponse
     }
 
     type createCartResponse {
@@ -126,6 +128,10 @@ module.exports = buildSchema(`
         email: String
         password: String
     }
+
+    input multiDeviceLoginInputReq {
+        currentRoute: String
+    }
     
     type RootMutation {
         createCartMutation(cartInput: cartInputReq) : createCartResponse
@@ -133,7 +139,7 @@ module.exports = buildSchema(`
         createOrderMutation(cartInput: cartInputReq) : createOrderResponse
         loginUserMutation(loginInput: loginInputReq) : loginUserResponse
         registrationUserMutation(registrationInput: registrationInputReq) : registrationUserResponse
-        createMultiDeviceLoginTokenMutation: createMultiDeviceLoginTokenResponse
+        createMultiDeviceLoginTokenMutation(multiDeviceLoginInput:multiDeviceLoginInputReq): createMultiDeviceLoginTokenResponse
     }
 
     schema {

@@ -1,4 +1,4 @@
-let { users, products, cart } = require("../Database/database");
+let { users, products, cart, multiDeviceTokens } = require("../Database/database");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { multiDediveLogin } = require("../utils/helpers");
@@ -96,15 +96,58 @@ module.exports = {
     }
   },
 
-  createMultiDeviceLoginTokenMutation({}, req) {
+  createMultiDeviceLoginTokenMutation({ multiDeviceLoginInput }, req) {
     try {
-      console.log(req.user);
-    } catch (error) {}
+      const response = users.filter(item => item.id === req.user)
+      if (response.length > 0) {
+        const multiDevicesToken = jwt.sign({
+          exp: Math.floor(Date.now() / 1000) + (60 * 60),
+          data: {
+            email: response[0].email,
+            token: response[0].token
+          }
+        }, '288biu18bd3bk3hih2k2iu3');
+        multiDeviceTokens.push({
+          curentRoute: multiDeviceLoginInput.currentRoute,
+          token: req.headers.authrized,
+          userId: response[0].id,
+          expireIn: Math.floor(Date.now() / 1000) + (60 * 60)
+        })
+        return { token: multiDevicesToken }
+      } else {
+        return { token: null }
+      }
+    } catch (error) {
+      console.log(error)
+    }
   },
 
-  multiDeviceLogin({ multiDeviceLoginInput }) {
+  multiDeviceLogin({ id }) {
     try {
-      return { link: "https://motosport.com" };
-    } catch (error) {}
+      const isTokenVarified = jwt.verify(id, '288biu18bd3bk3hih2k2iu3');
+      if (isTokenVarified) {
+        const userLoginTokenVerification = jwt.verify(isTokenVarified.data.token, '288biu18bd3bk3hih2k2iu3');
+        if (userLoginTokenVerification) {
+          isMultiDeviceLoginTokenPresent =
+            multiDeviceTokens.filter(
+              item => item.userId == userLoginTokenVerification.data.id &&
+                item.token == isTokenVarified.data.token
+            )
+          if (isMultiDeviceLoginTokenPresent.length > 0) {
+            const loginUserData = users.filter(
+              (item) => item.id === userLoginTokenVerification.data.id
+            );
+            loginUserData[0].lastLogin = new Date();
+            return {
+              token: isTokenVarified.data.token,
+              redirectRoute: isMultiDeviceLoginTokenPresent[0].curentRoute,
+              user: { ...loginUserData[0] },
+            };
+          }
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
   },
 };

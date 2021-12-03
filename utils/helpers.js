@@ -1,31 +1,23 @@
 const jwt = require("jsonwebtoken");
 
 module.exports = {
-  checkValidUserFromEmailPassword: ({ email, password, accessLocation }) => {},
+  checkValidUserFromEmailPassword: ({ email, password, accessLocation }) => { },
   verifyToke: (req, res, next) => {
-    console.log(req.headers.route);
-    switch (req.headers.route) {
-      case "/getproducts" || "/createmultidevicelogin":
-        try {
-          console.log("middleware", req.headers.authrized);
-          const token_ = jwt.verify(
-            req.headers.authrized,
-            "288biu18bd3bk3hih2k2iu3"
-          );
-          console.log(token_);
-          if (token_) {
-            console.log(token_);
-            req.user = token_.id;
-            next();
-          }
-        } catch (error) {
-          console.log(error);
-          return error;
+    if (["/getproducts", "/createmultidevicelogin"].indexOf(req.headers.route) > -1) {
+      try {
+        const token_ = jwt.verify(
+          req.headers.authrized,
+          "288biu18bd3bk3hih2k2iu3"
+        );
+        if (token_) {
+          req.user = token_.data.id;
+          next();
         }
-        break;
-
-      default:
-        next();
+      } catch (error) {
+        console.log(error);
+        return error;
+      }
     }
+    next();
   },
 };

@@ -18,7 +18,7 @@ app.use(
     schema: graphQLSchema,
     rootValue: graphQLResolver,
     graphiql: true,
-    formatError(error) {
+    customFormatErrorFn(error) {
       if (!error.originalError) {
         return error;
       }

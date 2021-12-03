@@ -43,4 +43,6 @@ module.exports = {
   cart: {},
 
   order: {},
+
+  multiDeviceTokens: []
 };
